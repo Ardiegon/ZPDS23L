@@ -5,13 +5,14 @@ import argparse
 import numpy as np
 
 from enum import Enum
+from typing import Callable
 from math import log10, sqrt
 
 class Metrics(Enum):
     PSNR = "psnr"
     MSE = "mse"
 
-def get_metric(metric: Metrics) -> function:
+def get_metric(metric: Metrics) -> Callable:
     metric_dict = {
         Metrics.PSNR: psnr,
         Metrics.MSE: mse
@@ -27,11 +28,11 @@ def psnr(gt, sample):
     Peak Signal-Noise Ratio:
     https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
     """
-    mse = mse(gt, sample)
-    if(mse == 0): 
+    mse_val = mse(gt, sample)
+    if(mse_val == 0): 
         return 100
     max_pixel = 255.0
-    psnr = 20 * log10(max_pixel / sqrt(mse))
+    psnr = 20 * log10(max_pixel / sqrt(mse_val))
     return psnr
 
 def parse_args():
