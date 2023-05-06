@@ -19,7 +19,8 @@ Install Python 3.9, with:
 - OpenCV
 - Numpy
 - Flask
-But then without "conda develop" you need to add src directory to PYTHONPATH by your own like below (remember to change accordingly to your specific path).
+
+But then without "conda develop" you need to add src directory to PYTHONPATH by your own like below (remember to adjust your path accordingly).
 ```bash
 export PYTHONPATH=${PYTHONPATH}:${HOME}/ZPDS23L/src
 ```
@@ -31,17 +32,17 @@ export PYTHONPATH=${PYTHONPATH}:${HOME}/ZPDS23L/src
 cd ZPDS23L
 ```
 
-1. Create a `data` directory for storing images
+2. Create a `data` directory for storing images
 ```bash
 mkdir data
 ```
 
-1. Run a web app by typing the following in a command line
+3. Run a web app by typing the following in a command line
 ```bash
 python3 src/run.py
 ```
 
-1. And click this [link](http://localhost:8000/).
+4. And click this [link](http://localhost:8000/).
 **HAVE FUN**
 
 ## Tests
