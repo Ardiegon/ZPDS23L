@@ -5,10 +5,26 @@ import os
 from src.denoising import DenoisingModelInterface, DenoisingCV2, DenoisingUNet
 import cv2
 from typing import Union
+from enum import Enum
 
 UPLOAD_FOLDER = os.path.abspath("data")
 MAX_FILE_SIZE = 16  # MB
 ALLOWED_EXTENSIONS = set(['png'])
+
+class Algorithm(str, Enum):
+    CV2 = "CV2"
+    UNet = "UNet"
+
+def getUNet():
+    try:
+        return DenoisingUNet()
+    except:
+        return DenoisingModelInterface()
+
+ALGORITHMS = {
+    Algorithm.CV2 : DenoisingCV2(),
+    Algorithm.UNet : getUNet()  # set UNet if cuda available, else set Interface to raise error
+}
 
 class DenoiserWebApp(Flask):
     """
@@ -68,7 +84,6 @@ class DenoiserWebApp(Flask):
         cv2.imwrite(os.path.join(self.config['UPLOAD_FOLDER'], filename_denoised), img)
         return filename_denoised
 
-
 def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
     @app.route('/', methods=['GET', 'POST'])
     def upload_file() -> Union[str, wResponse]:
@@ -77,6 +92,9 @@ def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
+            algorithm = request.form['algorithm']
+            # Set selected denoising algorithm
+            app.denoiser = ALGORITHMS.get(algorithm)
             file = request.files['file']
             # If the user does not select a file, the browser submits an
             # empty file without a filename.
@@ -93,8 +111,12 @@ def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
         <title>Upload new File</title>
         <h1>Upload new File</h1>
         <form method=post enctype=multipart/form-data>
-        <input type=file name=file>
-        <input type=submit value=Upload>
+            <input type=file name=file>
+            <select name="algorithm">
+                <option value="CV2">CV2</option>
+                <option value="UNet">UNet</option>
+            </select>
+            <input type=submit value=Upload>
         </form>
         '''
 
