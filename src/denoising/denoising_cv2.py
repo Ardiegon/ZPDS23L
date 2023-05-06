@@ -5,7 +5,7 @@ import numpy as np
 
 from src.denoising.denoising_model_interface import DenoisingModelInterface
 
-class DenoisingCV2:
+class DenoisingCV2(DenoisingModelInterface):
     def __init__(self) -> None:
         pass
 
