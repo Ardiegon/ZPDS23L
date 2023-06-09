@@ -4,6 +4,7 @@ import os
 import cv2
 import numpy as np
 import torch
+from enum import Enum
 
 from src.denoising.denoising_model_interface import DenoisingModelInterface
 from model.parameter_estimator import ParameterEstimatorLight
@@ -15,7 +16,10 @@ class DenoisingHybrid(DenoisingModelInterface):
         self.device = device
         self.post_estimation_factor = est_factor
         param_est_model = ParameterEstimatorLight(est_range=(0,0.05), params_n=1, do_transform=True)
-        param_est_model.load_state_dict(torch.load(os.path.join("src", "checkpoints", "model_denoise_40000.pth")))
+        param_est_model.load_state_dict(torch.load(
+            os.path.join("src", "checkpoints", "model_denoise_40000.pth"),
+            map_location=torch.device(device)
+        ))
         self.param_est_model = param_est_model.to(device)
         self.map_model_to_param_func = get_std_to_noise_param_map()
 

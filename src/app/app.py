@@ -24,7 +24,7 @@ def getDenoisingHybrid():
 
 ALGORITHMS = {
     Algorithm.CV2 : DenoisingCV2(),
-    Algorithm.Hybrid : getDenoisingHybrid()  # set UNet if cuda available, else set Interface to raise error
+    Algorithm.Hybrid : getDenoisingHybrid()  # use cuda if available, else use cpu
 }
 
 class DenoiserWebApp(Flask):
@@ -36,9 +36,12 @@ class DenoiserWebApp(Flask):
     run(port=5000, debug=False)
     """
 
-    def __init__(
-            self, import_name: str, upload_directory: str, max_file_size: int,
-            denoiser: DenoisingModelInterface, allowed_extensions: set = {'png'}, debug: bool = False
+    def __init__(self,
+            import_name: str,
+            upload_directory: str,
+            max_file_size: int,
+            allowed_extensions: set = {'png'},
+            debug: bool = False
         ):
         """
         Parameters
@@ -49,8 +52,6 @@ class DenoiserWebApp(Flask):
             The absolute path to the director in which images should be saved
         max_file_size : int
             The maximum size of a uploaded file (in MB)
-        denoiser : DenoisingModelInterface
-            Object implementing DenoisingModelInterface interface used to denoise the image
         allowed_extensions : set, optional
             A set of allowed extensions for uploaded files (default is only 'png')
         debug : bool, optional
@@ -60,7 +61,7 @@ class DenoiserWebApp(Flask):
         super().__init__(import_name)
         self.config['UPLOAD_FOLDER'] = upload_directory
         self.config['MAX_CONTENT_LENGTH'] = max_file_size * 10**6
-        self.denoiser: DenoisingModelInterface = denoiser
+        self.denoiser: DenoisingModelInterface = DenoisingModelInterface
         self.allowed_extensions: set = allowed_extensions
         self.DEBUG: bool = debug
         prepare_denoiser_web_app(self)
@@ -93,9 +94,8 @@ def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
-            algorithm = request.form['algorithm']
             # Set selected denoising algorithm
-            app.denoiser = ALGORITHMS.get(algorithm)
+            app.denoiser = ALGORITHMS.get(request.form['algorithm'])
             file = request.files['file']
             # If the user does not select a file, the browser submits an
             # empty file without a filename.
@@ -136,7 +136,7 @@ background-image:linear-gradient(175deg, rgba(0,0,0,0) 95%, #8da389 95%),
         <input type=file name=file>
         <select name="algorithm">
             <option value="CV2">CV2</option>
-            <option value="UNet">HybridDenoise</option>
+            <option value="Hybrid">HybridDenoise</option>
         </select>
         <input type=submit value=Upload>
     </form>
