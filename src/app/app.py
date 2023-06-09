@@ -2,7 +2,7 @@ from flask import Flask, flash, request, redirect, url_for, Request, Response, s
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response as wResponse
 import os
-from src.denoising import DenoisingModelInterface, DenoisingCV2, DenoisingUNet
+from src.denoising import DenoisingModelInterface, DenoisingCV2, DenoisingHybrid
 import cv2
 from typing import Union
 from enum import Enum
@@ -13,17 +13,18 @@ ALLOWED_EXTENSIONS = set(['png'])
 
 class Algorithm(str, Enum):
     CV2 = "CV2"
-    UNet = "UNet"
+    Hybrid = "Hybrid"
 
-def getUNet():
+
+def getDenoisingHybrid():
     try:
-        return DenoisingUNet()
+        return DenoisingHybrid(device="cuda")
     except:
-        return DenoisingModelInterface()
+        return DenoisingHybrid(device="cpu")
 
 ALGORITHMS = {
     Algorithm.CV2 : DenoisingCV2(),
-    Algorithm.UNet : getUNet()  # set UNet if cuda available, else set Interface to raise error
+    Algorithm.Hybrid : getDenoisingHybrid()  # set UNet if cuda available, else set Interface to raise error
 }
 
 class DenoiserWebApp(Flask):
@@ -135,7 +136,7 @@ background-image:linear-gradient(175deg, rgba(0,0,0,0) 95%, #8da389 95%),
         <input type=file name=file>
         <select name="algorithm">
             <option value="CV2">CV2</option>
-            <option value="UNet">UNet</option>
+            <option value="UNet">HybridDenoise</option>
         </select>
         <input type=submit value=Upload>
     </form>

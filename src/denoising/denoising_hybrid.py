@@ -10,10 +10,10 @@ from model.parameter_estimator import ParameterEstimatorLight
 from model.mapping_params import get_std_to_noise_param_map
 
 class DenoisingHybrid(DenoisingModelInterface):
-    def __init__(self, device = "cuda", bias = 0.0) -> None:
+    def __init__(self, device = "cuda", est_factor = 0.9) -> None:
         super().__init__()
         self.device = device
-        self.post_estimation_bias = bias
+        self.post_estimation_factor = est_factor
         param_est_model = ParameterEstimatorLight(est_range=(0,0.05), params_n=1, do_transform=True)
         param_est_model.load_state_dict(torch.load(os.path.join("src", "checkpoints", "model_denoise_40000.pth")))
         self.param_est_model = param_est_model.to(device)
@@ -22,7 +22,7 @@ class DenoisingHybrid(DenoisingModelInterface):
 
     def denoise(self, img: np.array) -> np.array:
         sample = torch.from_numpy(img).permute(2,0,1).unsqueeze(0).to(torch.float32).to(self.device)
-        output = self.param_est_model(sample).detach().cpu() + self.post_estimation_bias
+        output = self.param_est_model(sample).detach().cpu() * self.post_estimation_factor
         print(output.item())
         param = self.map_model_to_param_func(output.item())
         print(param)

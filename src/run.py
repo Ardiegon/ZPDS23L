@@ -1,8 +1,11 @@
 from app import DenoiserWebApp
-from denoising import DenoisingCV2, DenoisingUNet
+from denoising import DenoisingCV2, DenoisingHybrid
 import os
 
 if __name__ == "__main__":
+    device = "cuda"
+    # device = "cpu"
+    # denoiser = DenoisingHybrid(device=device)
     denoiser = DenoisingCV2()
     app = DenoiserWebApp(
         __name__,
