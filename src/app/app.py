@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, redirect, url_for, Request, Response, send_from_directory
+from flask import Flask, flash, request, redirect, url_for, Request, Response, send_from_directory, render_template
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response as wResponse
 import os
@@ -104,45 +104,14 @@ def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
                 return redirect(request.url)
             if file and app.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                filename_orig = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filename_orig)
                 filename_denoised = app.denoise_rw(filename)
-                return redirect(url_for('download_file', name=filename_denoised))
-        return '''
-<!doctype html>
-<head>
-    <title>Main denoiser page</title>
-</head>
-<body style="background-color:#e4e4d9;
-padding: 1em;
-width: 100%;
-height: 100vh;
-box-sizing: border-box;
-background-image:linear-gradient(175deg, rgba(0,0,0,0) 95%, #8da389 95%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 95%, #8da389 95%),
-                 linear-gradient(175deg, rgba(0,0,0,0) 90%, #b4b07f 90%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 92%, #b4b07f 92%),
-                 linear-gradient(175deg, rgba(0,0,0,0) 85%, #c5a68e 85%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 89%, #c5a68e 89%),
-                 linear-gradient(175deg, rgba(0,0,0,0) 80%, #ba9499 80%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 86%, #ba9499 86%),
-                 linear-gradient(175deg, rgba(0,0,0,0) 75%, #9f8fa4 75%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 83%, #9f8fa4 83%),
-                 linear-gradient(175deg, rgba(0,0,0,0) 70%, #74a6ae 70%),
-                 linear-gradient( 85deg, rgba(0,0,0,0) 80%, #74a6ae 80%);
-">
-<div style="text-align:center;width:80%;">
-    <h1 style="font-family:ubuntu;">Super Denoiser 3000</h1>
-    <form method=post enctype=multipart/form-data>
-        <input type=file name=file>
-        <select name="algorithm">
-            <option value="CV2">CV2</option>
-            <option value="Hybrid">HybridDenoise</option>
-        </select>
-        <input type=submit value=Upload>
-    </form>
-</div>
-</body>
-'''
+                return render_template('photo.html',
+                                       name_denoised=filename_denoised,
+                                       name_orig=filename)
+                # return redirect(url_for('download_file', name=filename_denoised))
+        return render_template('index.html')
 
     @app.route('/uploads/<name>')
     def download_file(name: str) -> Response:
