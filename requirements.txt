@@ -1,0 +1,5 @@
+flask
+torchmetrics
+opencv-python
+scikit-learn
+tqdm
