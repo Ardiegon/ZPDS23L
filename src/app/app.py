@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, redirect, url_for, Request, Response, send_from_directory, render_template
+from flask import Flask, flash, request, redirect, url_for, Request, Response, send_from_directory, render_template, send_file
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response as wResponse
 import os
@@ -110,12 +110,16 @@ def prepare_denoiser_web_app(app: DenoiserWebApp) -> DenoiserWebApp:
                 return render_template('photo.html',
                                        name_denoised=filename_denoised,
                                        name_orig=filename)
-                # return redirect(url_for('download_file', name=filename_denoised))
         return render_template('index.html')
 
     @app.route('/uploads/<name>')
-    def download_file(name: str) -> Response:
+    def show_file(name: str) -> Response:
         return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+    
+    @app.route('/download/<name>')
+    def download_file(name: str) -> Response:
+        return send_from_directory(app.config["UPLOAD_FOLDER"], name,
+                                   as_attachment=True)
     
     return app
 
